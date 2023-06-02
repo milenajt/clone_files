@@ -4,10 +4,12 @@ import os
 from tkinter.filedialog import askdirectory
 from datetime import datetime, date, time
 import shutil
+import pathlib
 
 from_path = askdirectory()
 start = os.path.dirname(from_path)
 to_path = askdirectory()
+extensions = ['.mp3', '.wav', '.flac']
 
 def choose_year():
     root = tk.Tk()
@@ -34,10 +36,14 @@ def check_year(item):
     return formatted_date
 
 def process_files(path, path1, date):
+    count = 0
     tree = os.walk(path)
     for root in tree:
         files = os.listdir(root[0])
         for file in files:
+            ext = pathlib.Path(file).suffix
+            if ext not in extensions:
+                continue
             if os.path.isfile(os.path.join(root[0],file)):
                 creation_date = datetime.strptime(check_year(os.path.join(root[0], file)), "%Y-%m-%d")
                 if date < creation_date:
@@ -46,5 +52,8 @@ def process_files(path, path1, date):
                     if not os.path.exists(destination):
                         os.makedirs(destination)
                     shutil.copy(os.path.join(root[0], file), destination)
+                    count += 1
+    return count
 
-process_files(from_path, to_path, choosed_datetime)
+result = process_files(from_path, to_path, choosed_datetime)
+print(f'Copied {result} files.')
