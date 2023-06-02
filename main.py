@@ -6,7 +6,7 @@ from datetime import datetime, date, time
 import shutil
 
 from_path = askdirectory()
-new_folder_1 = os.path.basename(from_path)
+start = os.path.dirname(from_path)
 to_path = askdirectory()
 
 def choose_year():
@@ -33,16 +33,18 @@ def check_year(item):
     formatted_date = creation_date.strftime('%Y-%m-%d')
     return formatted_date
 
-def process_files(path_1, path_2, date):
-    for root, dirs, files in os.walk(path_1):
+def process_files(path, path1, date):
+    tree = os.walk(path)
+    for root in tree:
+        files = os.listdir(root[0])
         for file in files:
-            the_source = root
-            new_folder_2 = os.path.basename(the_source)
-            creation_date = datetime.strptime(check_year(os.path.join(root, file)), "%Y-%m-%d")
-            if date < creation_date:
-                new_path = os.path.join(os.path.join(path_2, new_folder_1), new_folder_2)
-                if not os.path.exists(new_path):
-                    os.makedirs(new_path)
-                shutil.copy(os.path.join(the_source, file), new_path)
+            if os.path.isfile(os.path.join(root[0],file)):
+                creation_date = datetime.strptime(check_year(os.path.join(root[0], file)), "%Y-%m-%d")
+                if date < creation_date:
+                    path2 = os.path.relpath(root[0],start)
+                    destination = os.path.join(path1, path2)
+                    if not os.path.exists(destination):
+                        os.makedirs(destination)
+                    shutil.copy(os.path.join(root[0], file), destination)
 
 process_files(from_path, to_path, choosed_datetime)
